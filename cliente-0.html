@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Salão de Beleza Bela Vista: Transforme seu visual com cortes, coloração e tratamentos capilares. Agende seu horário online de forma fácil e rápida em São Paulo/SP. Profissionais qualificados e ambiente acolhedor. Veja seus agendamentos.">
+    <title>Salão de Beleza Bela Vista - Agendamento e Meus Horários</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        html {
+            scroll-behavior: smooth; /* Adicionado para rolagem suave */
+        }
+        /* Mantenha todos os seus estilos aqui, incluindo os do menu mobile */
+        .calendar-day:hover:not(.disabled) {
+            background-color: #f3f4f6; /* gray-100 */
+            cursor: pointer;
+        }
+        .calendar-day.selected {
+            background-color: #2563eb; /* blue-600 */
+            color: white;
+        }
+        .time-slot:hover:not(.booked) {
+            background-color: #f3f4f6; /* gray-100 */
+            cursor: pointer;
+        }
+        .time-slot.selected {
+            background-color: #2563eb; /* blue-600 */
+            color: white;
+        }
+        .time-slot.booked {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        /* Estilos para o menu mobile */
+        @media (max-width: 768px) {
+            .mobile-menu {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                background-color: #fff;
+                position: absolute;
+                top: 64px; /* Altura da navbar */
+                left: 0;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                z-index: 1000;
+            }
+            .mobile-menu.active {
+                display: flex;
+            }
+            .mobile-menu a {
+                padding: 1rem;
+                text-align: center;
+                border-bottom: 1px solid #eee;
+            }
+        }
+
+        /* Estilos para o slideshow de fundo */
+        .hero-section-with-bg {
+            background-size: cover; /* Cobre a área inteira */
+            background-position: center; /* Centraliza a imagem */
+            background-repeat: no-repeat; /* Evita repetição */
+            position: relative; /* Para posicionar o overlay */
+            animation: slideshow 15s infinite; /* 3 imagens * 5 segundos cada = 15s */
+        }
+
+        .hero-section-with-bg::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); /* Overlay escuro para melhorar contraste do texto */
+            z-index: 1; /* Garante que o overlay esteja acima da imagem e abaixo do conteúdo */
+        }
+        .hero-section-with-bg > .container {
+            position: relative;
+            z-index: 2; /* Garante que o conteúdo esteja acima do overlay */
+        }
+
+        /* Keyframes para a animação do slideshow */
+        @keyframes slideshow {
+            0% { background-image: url('index.avif'); } /* Primeira imagem */
+            33% { background-image: url('index.avif'); } /* Segunda imagem */
+            100% { background-image: url('index.avif'); } /* Volta para a primeira para loop suave */
+
+           
+        }
+
+        /* NOVOS ESTILOS ADICIONADOS/MODIFICADOS AQUI */
+        .content-section {
+            display: none; /* Esconde todas as seções por padrão */
+            min-height: calc(100vh - 64px); /* Ocupa 100% da altura da viewport menos a navbar */
+            padding-top: 64px; /* Adiciona padding para o conteúdo não ficar atrás da navbar fixa */
+            box-sizing: border-box; /* Garante que padding não aumente a altura total */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .content-section.active-section {
+            display: block; /* Mostra a seção ativa */
+            opacity: 1;
+        }
+
+        /* Estilos para o botão flutuante do WhatsApp */
+        .whatsapp-button {
+            position: fixed;
+            bottom: 20px; /* Distância do fundo padrão para desktop */
+            right: 20px; /* Distância da direita */
+            background-color: #25D366; /* Cor verde do WhatsApp */
+            color: white;
+            border-radius: 50%; /* Faz um círculo */
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000; /* Garante que fique acima de outros elementos */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .whatsapp-button:hover {
+            transform: scale(1.1); /* Efeito de zoom ao passar o mouse */
+        }
+
+        /* Ajuste para dispositivos móveis */
+        @media (max-width: 768px) {
+            .whatsapp-button {
+                bottom: 80px; /* Move o botão mais para cima em telas menores */
+                right: 15px; /* Pode ajustar a distância da direita também */
+                width: 55px; /* Tamanho ligeiramente menor para mobile */
+                height: 55px;
+                font-size: 28px;
+            }
+
+            /* START - New styles for smaller booking step indicators on mobile */
+            .step-indicator .w-10 { /* Targets the circular number container */
+                width: 30px; /* Smaller width */
+                height: 30px; /* Smaller height */
+                font-size: 0.875rem; /* Smaller font for the number (14px) */
+            }
+
+            .step-indicator span { /* Targets the text below the number */
+                font-size: 0.75rem; /* Smaller font for the text (12px) */
+                margin-top: 0.25rem; /* Adjust margin as needed */
+                text-align: center; /* Ensures text wraps if long */
+            }
+
+            .flex.justify-between.items-center.mb-8 { /* Targets the parent flex container of step indicators */
+                gap: 0.5rem; /* Reduce gap between indicators */
+            }
+            /* END - New styles */
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800 bg-gray-50 pt-16">
+    <nav class="bg-white shadow-md py-4 fixed top-0 w-full z-50">
+        <div class="container mx-auto flex justify-between items-center px-6">
+            <a href="#" class="text-2xl font-bold text-blue-600" data-section-link="home">Bela Vista</a>
+            <div class="hidden md:flex space-x-6">
+                <a href="#home" class="text-gray-600 hover:text-blue-600" data-section-link="home">Home</a>
+                <a href="#about" class="text-gray-600 hover:text-blue-600" data-section-link="about">Sobre</a>
+                <a href="#services" class="text-gray-600 hover:text-blue-600" data-section-link="services">Serviços</a>
+                <a href="#gallery" class="text-gray-600 hover:text-blue-600" data-section-link="gallery">Galeria</a> <a href="#booking" class="text-gray-600 hover:text-blue-600" data-section-link="booking">Agendar</a>
+                <a href="#appointments" class="text-gray-600 hover:text-blue-600" data-section-link="appointments">Agendamentos</a>
+                <a href="#contact" class="text-gray-600 hover:text-blue-600" data-section-link="contact">Contato</a>
+            </div>
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-gray-600 hover:text-blue-600 focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="mobile-menu md:hidden">
+            <a href="#home" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="home">Home</a>
+            <a href="#about" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="about">Sobre</a>
+            <a href="#services" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="services">Serviços</a>
+            <a href="#gallery" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="gallery">Galeria</a> <a href="#booking" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="booking">Agendar</a>
+            <a href="#appointments" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="appointments">Agendamentos</a>
+            <a href="#contact" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="contact">Contato</a>            
+        </div>
+        
+    </nav>
+
+    <div id="menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden"></div>
+
+    <section id="home" class="hero-section-with-bg text-white py-20 text-center content-section" data-section="home">
+        <div class="container mx-auto px-6">
+            <br><br><br><br><br>
+            <h1 class="text-5xl font-extrabold mb-4">Salão de Beleza Bela Vista</h1>
+            <p class="text-xl mb-8">Transforme seu visual e eleve sua autoestima conosco.</p>
+            <br><br>
+            <a href="#booking" class="bg-white text-blue-600 hover:bg-blue-100 px-8 py-3 rounded-full text-lg font-semibold transition duration-300">Agende Agora</a>
+        </div>
+    </section>
+
+    <section id="about" class="py-16 bg-white content-section" data-section="about">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-8">Sobre Nós</h2>
+            <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
+                No Salão de Beleza Bela Vista, combinamos talento e paixão para oferecer uma experiência única de beleza e bem-estar. Nossa equipe de profissionais altamente qualificados está pronta para cuidar de você, desde cortes modernos e colorações vibrantes até tratamentos capilares profundos e maquiagens deslumbrantes. Venha nos conhecer e desfrute de um ambiente acolhedor e serviços de excelência.
+            </p>
+        </div>
+    </section>
+
+    <section id="services" class="py-16 bg-gray-100 content-section" data-section="services">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-8">Nossos Serviços</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition duration-300">
+                    <i class="fas fa-cut text-5xl text-blue-600 mb-4"></i>
+                    <h3 class="text-2xl font-semibold mb-2">Cortes e Penteados</h3>
+                    <p class="text-gray-600">Transformamos seu cabelo com cortes modernos e penteados elegantes para qualquer ocasião.</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition duration-300">
+                    <i class="fas fa-palette text-5xl text-blue-600 mb-4"></i>
+                    <h3 class="text-2xl font-semibold mb-2">Coloração</h3>
+                    <p class="text-gray-600">Do balayage às mechas, encontre a cor perfeita para realçar sua beleza.</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition duration-300">
+                    <i class="fas fa-spa text-5xl text-blue-600 mb-4"></i>
+                    <h3 class="text-2xl font-semibold mb-2">Tratamentos Capilares</h3>
+                    <p class="text-gray-600">Reconstrução, hidratação e nutrição para cabelos saudáveis e brilhantes.</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition duration-300">
+                    <i class="fas fa-brush text-5xl text-blue-600 mb-4"></i>
+                    <h3 class="text-2xl font-semibold mb-2">Maquiagem</h3>
+                    <p class="text-gray-600">Realce sua beleza natural com maquiagens para festas, eventos e dia a dia.</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition duration-300">
+                    <i class="fas fa-hand-sparkles text-5xl text-blue-600 mb-4"></i>
+                    <h3 class="text-2xl font-semibold mb-2">Manicure e Pedicure</h3>
+                    <p class="text-gray-600">Cuidados completos para unhas perfeitas e saudáveis.</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition duration-300">
+                    <i class="fas fa-face-flushed text-5xl text-blue-600 mb-4"></i>
+                    <h3 class="text-2xl font-semibold mb-2">Estética Facial</h3>
+                    <p class="text-gray-600">Limpeza de pele, hidratação e tratamentos faciais personalizados.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="py-16 bg-white content-section" data-section="gallery">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-8">Nossa Galeria</h2>
+            <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mb-10">
+                Inspire-se com alguns dos nossos trabalhos e transformações.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div class="rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                    <img src="https://images.unsplash.com/photo-1596465490916-d3c5f212f0d9?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Corte Moderno" class="w-full h-64 object-cover">
+                </div>
+                <div class="rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                    <img src="https://images.unsplash.com/photo-1596465490916-d3c5f212f0d9?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Coloração Vibrante" class="w-full h-64 object-cover">
+                </div>
+                <div class="rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                    <img src="https://images.unsplash.com/photo-1596465490916-d3c5f212f0d9?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Penteado para Evento" class="w-full h-64 object-cover">
+                </div>
+                <div class="rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                    <img src="https://images.unsplash.com/photo-1596465490916-d3c5f212f0d9?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Tratamento Capilar" class="w-full h-64 object-cover">
+                </div>
+                 <div class="rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                    <img src="https://images.unsplash.com/photo-1596465490916-d3c5f212f0d9?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Maquiagem Profissional" class="w-full h-64 object-cover">
+                </div>
+                 <div class="rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                    <img src="https://images.unsplash.com/photo-1596465490916-d3c5f212f0d9?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Manicure e Pedicure" class="w-full h-64 object-cover">
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="booking" class="py-16 bg-white content-section" data-section="booking">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-gray-800 text-center mb-8">Agende seu Horário</h2>
+
+            <div class="max-w-4xl mx-auto bg-gray-50 px-2 py-4 sm:p-8 rounded-lg shadow-lg">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="flex flex-col items-center step-indicator" id="step-indicator-1">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-blue-600 text-white font-bold">1</div>
+                        <span class="text-sm mt-2">Serviço</span>
+                    </div>
+                    <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
+                    <div class="flex flex-col items-center step-indicator" id="step-indicator-2">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300 text-gray-600 font-bold">2</div>
+                        <span class="text-sm mt-2">Data</span>
+                    </div>
+                    <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
+                    <div class="flex flex-col items-center step-indicator" id="step-indicator-3">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300 text-gray-600 font-bold">3</div>
+                        <span class="text-sm mt-2">Horário</span>
+                    </div>
+                    <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
+                    <div class="flex flex-col items-center step-indicator" id="step-indicator-4">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300 text-gray-600 font-bold">4</div>
+                        <span class="text-sm mt-2">Confirmação</span>
+                    </div>
+                    <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
+                    <div class="flex flex-col items-center step-indicator" id="step-indicator-5">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300 text-gray-600 font-bold">5</div>
+                        <span class="text-sm mt-2">Concluído</span>
+                    </div>
+                </div>
+
+                <div id="booking-step-1" class="booking-step active">
+                    <h3 class="text-2xl font-semibold mb-6">1. Escolha o Serviço</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button class="service-option bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200 text-left" data-service="Corte Feminino">
+                            <span class="font-semibold text-lg">Corte Feminino</span> - R$ 80,00
+                        </button>
+                        <button class="service-option bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200 text-left" data-service="Corte Masculino">
+                            <span class="font-semibold text-lg">Corte Masculino</span> - R$ 50,00
+                        </button>
+                        <button class="service-option bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200 text-left" data-service="Coloração">
+                            <span class="font-semibold text-lg">Coloração</span> - R$ 150,00
+                        </button>
+                        <button class="service-option bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200 text-left" data-service="Mechas">
+                            <span class="font-semibold text-lg">Mechas</span> - R$ 250,00
+                        </button>
+                        <button class="service-option bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200 text-left" data-service="Tratamento Capilar">
+                            <span class="font-semibold text-lg">Tratamento Capilar</span> - R$ 100,00
+                        </button>
+                        <button class="service-option bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200 text-left" data-service="Manicure e Pedicure">
+                            <span class="font-semibold text-lg">Manicure e Pedicure</span> - R$ 70,00
+                        </button>
+                    </div>
+                </div>
+
+                <div id="booking-step-2" class="booking-step hidden">
+                    <h3 class="text-2xl font-semibold mb-6">2. Escolha a Data</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="prev-month" class="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300"><i class="fas fa-chevron-left"></i></button>
+                        <h4 id="current-month-display" class="text-xl font-semibold"></h4>
+                        <button id="next-month" class="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-2 text-center">
+                        <div class="font-bold text-gray-500">Dom</div>
+                        <div class="font-bold text-gray-500">Seg</div>
+                        <div class="font-bold text-gray-500">Ter</div>
+                        <div class="font-bold text-gray-500">Qua</div>
+                        <div class="font-bold text-gray-500">Qui</div>
+                        <div class="font-bold text-gray-500">Sex</div>
+                        <div class="font-bold text-gray-500">Sáb</div>
+                        </div>
+                </div>
+
+                <div id="booking-step-3" class="booking-step hidden">
+                    <h3 class="text-2xl font-semibold mb-6">3. Escolha o Horário</h3>
+                    <div id="time-slots-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        </div>
+                </div>
+
+                <div id="booking-step-4" class="booking-step hidden">
+                    <h3 class="text-2xl font-semibold mb-6">4. Confirme seu Agendamento</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                        <p class="text-lg font-semibold mb-2">Resumo do Agendamento:</p>
+                        <p><strong>Serviço:</strong> <span id="summary-service"></span></p>
+                        <p><strong>Data:</strong> <span id="summary-date"></span></p>
+                        <p><strong>Horário:</strong> <span id="summary-time"></span></p>
+                    </div>
+
+                    <form id="booking-form">
+                        <div class="mb-4">
+                            <label for="user-name" class="block text-gray-700 text-sm font-bold mb-2">Seu Nome:</label>
+                            <input type="text" id="user-name" name="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="user-email" class="block text-gray-700 text-sm font-bold mb-2">Seu E-mail:</label>
+                            <input type="email" id="user-email" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="user-phone" class="block text-gray-700 text-sm font-bold mb-2">Seu Telefone (opcional):</label>
+                            <input type="tel" id="user-phone" name="phone" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">Confirmar Agendamento</button>
+                    </form>
+                </div>
+
+                <div id="booking-step-5" class="booking-step hidden">
+                    <div class="text-center py-10">
+                        <i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>
+                        <h3 class="text-3xl font-bold mb-4">Agendamento Concluído!</h3>
+                        <p class="text-lg text-gray-700 mb-6">Seu horário foi agendado com sucesso.</p>
+                        <p class="text-gray-600 mb-2">Você agendou:</p>
+                        <p><strong>Serviço:</strong> <span id="confirmation-service"></span></p>
+                        <p><strong>Data:</strong> <span id="confirmation-date"></span></p>
+                        <p><strong>Horário:</strong> <span id="confirmation-time"></span></p>
+                        <p class="mt-4 text-gray-600">Um e-mail de confirmação será enviado em breve.</p>
+                        <button id="new-appointment-btn" class="mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Novo Agendamento
+                        </button>
+                        <a href="#appointments" class="inline-block mt-8 ml-4 text-blue-600 hover:text-blue-800 font-bold py-2 px-4 rounded">Ver Meus Agendamentos</a>
+                    </div>
+                </div>
+
+                <div class="flex justify-between mt-8">
+                    <button id="prev-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline hidden">Anterior</button>
+                    <button id="next-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mx-auto">Próximo</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="appointments" class="py-16 bg-gray-100 content-section" data-section="appointments">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-gray-800 text-center mb-8">Agendamentos Bela Vista</h2>
+            <div id="appointments-list" class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <p id="no-appointments-message" class="text-center text-gray-600 text-lg col-span-full">Você não possui agendamentos marcados ainda.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-16 bg-white content-section" data-section="contact">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-8">Contato</h2>
+            <p class="text-lg text-gray-700 mb-4">Estamos localizados em:</p>
+            <p class="text-xl font-semibold text-blue-600 mb-6">Rua das Flores, 123 - Centro, São Paulo - SP</p>
+            <div class="map-container mb-8 rounded-lg overflow-hidden shadow-lg">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3749.638290234771!2d-44.13326162503282!3d-19.967814438318856!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xa697a2249e0b8d%3A0xf62c76d05f3e9b1d!2sRua%20das%20Flores%2C%20123%20-%20Centro%2C%20Belo%20Horizonte%20-%20MG%2C%2030110-010!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr"
+                    width="100%"
+                    height="450"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+            <p class="text-lg text-gray-700 mb-2">Telefone: (11) 98765-4321</p>
+            <p class="text-lg text-gray-700">Email: contato@belavista.com.br</p>
+        </div>
+    </section>
+
+    <footer class="bg-gray-800 text-white py-8 text-center">
+        <div class="container mx-auto px-6">
+            <p>© <span id="current-year-footer"></span> Salão de Beleza Bela Vista. Todos os direitos reservados. <br><a href="index.html">Desenvolvido por Edicarlos Silva</a></p>
+            <div class="flex justify-center space-x-4 mt-4">
+                <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/5531989416752?text=Ol%C3%A1%2C%20tudo%20bem." class="whatsapp-button" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script>
+        // Variáveis de estado do agendamento
+        let currentStep = 1;
+        let selectedService = null;
+        let selectedDate = null; // Formato YYYY-MM-DD
+        let selectedTime = null; // Formato HH:MM
+
+        // Horários disponíveis (pode ser ajustado conforme a necessidade)
+        const availableTimeSlots = [
+            "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+            "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
+            "16:00", "16:30", "17:00", "17:30"
+        ];
+
+        // Elementos do DOM
+        const bookingSteps = document.querySelectorAll('.booking-step');
+        const stepIndicators = document.querySelectorAll('.step-indicator');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const serviceOptions = document.querySelectorAll('.service-option');
+        const calendarGrid = document.getElementById('calendar-grid');
+        const currentMonthDisplay = document.getElementById('current-month-display');
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        const timeSlotsGrid = document.getElementById('time-slots-grid');
+        const bookingForm = document.getElementById('booking-form');
+        const summaryService = document.getElementById('summary-service');
+        const summaryDate = document.getElementById('summary-date');
+        const summaryTime = document.getElementById('summary-time');
+        const confirmationService = document.getElementById('confirmation-service');
+        const confirmationDate = document.getElementById('confirmation-date');
+        const confirmationTime = document.getElementById('confirmation-time');
+        const newAppointmentBtn = document.getElementById('new-appointment-btn');
+        const appointmentsListDiv = document.getElementById('appointments-list');
+        const noAppointmentsMessage = document.getElementById('no-appointments-message');
+
+        // Adicionando elementos para o menu mobile e overlay
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuOverlay = document.getElementById('menu-overlay');
+
+        // Variável para a data atual do calendário
+        let currentMonth = new Date(); // Inicia com o mês atual
+
+        // NOVAS VARIÁVEIS PARA AS SEÇÕES DE CONTEÚDO
+        const contentSections = document.querySelectorAll('.content-section');
+        const navLinks = document.querySelectorAll('[data-section-link]');
+
+        // Funções de Local Storage
+        function getAgendamentosFromLocalStorage() {
+            try {
+                const agendamentos = localStorage.getItem('agendamentosBelaVista');
+                return agendamentos ? JSON.parse(agendamentos) : [];
+            } catch (e) {
+                console.error("Erro ao ler agendamentos do localStorage:", e);
+                return [];
+            }
+        }
+
+        function saveAgendamentosToLocalStorage(agendamentos) {
+            try {
+                localStorage.setItem('agendamentosBelaVista', JSON.stringify(agendamentos));
+            } catch (e) {
+                console.error("Erro ao salvar agendamentos no localStorage:", e);
+            }
+        }
+
+        function getBookedSlotsForDate(dateString) {
+            const allAgendamentos = getAgendamentosFromLocalStorage();
+            return allAgendamentos
+                .filter(ag => ag.date === dateString)
+                .map(ag => ag.time);
+        }
+
+        // Funções de UI e Navegação
+        function showStep(step) {
+            currentStep = step;
+
+            bookingSteps.forEach((s, index) => {
+                s.classList.toggle('active', index + 1 === step);
+                s.classList.toggle('hidden', index + 1 !== step);
+            });
+
+            stepIndicators.forEach((indicator, index) => {
+                const circle = indicator.querySelector('div');
+                if (index + 1 < step) {
+                    circle.classList.remove('bg-gray-300', 'text-gray-600');
+                    circle.classList.add('bg-blue-600', 'text-white');
+                } else if (index + 1 === step) {
+                    circle.classList.remove('bg-gray-300', 'text-gray-600');
+                    circle.classList.add('bg-blue-600', 'text-white');
+                } else {
+                    circle.classList.remove('bg-blue-600', 'text-white');
+                    circle.classList.add('bg-gray-300', 'text-gray-600');
+                }
+            });
+
+            updateNavigationButtons();
+
+            // Rolar para a seção de agendamento ao mudar de passo, se necessário
+            // Removido para evitar rolagem automática se o usuário já estiver na seção de agendamento
+            // e apenas alternando os passos internos.
+            // document.getElementById('booking').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function updateNavigationButtons() {
+            if (currentStep === 1) {
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.remove('hidden');
+            } else if (currentStep === 4) { // No passo de confirmação, o próximo botão é o de submit do form
+                prevBtn.classList.remove('hidden');
+                nextBtn.classList.add('hidden');
+            } else if (currentStep === 5) { // No passo de conclusão, não há botões de navegação padrão
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+            } else {
+                prevBtn.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
+            }
+        }
+
+        function nextStep() {
+            // Validações antes de avançar
+            if (currentStep === 1 && !selectedService) {
+                alert('Por favor, selecione um serviço.');
+                return;
+            }
+            if (currentStep === 2 && !selectedDate) {
+                alert('Por favor, selecione uma data.');
+                return;
+            }
+            if (currentStep === 3 && !selectedTime) {
+                alert('Por favor, selecione um horário.');
+                return;
+            }
+
+            if (currentStep < 4) { // Permite ir até o passo 4 (Confirmação)
+                currentStep++;
+                showStep(currentStep);
+            }
+
+            if (currentStep === 4) { // Preenche o resumo ao chegar no passo 4
+                updateSummary();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        // Funções do Calendário
+        function renderCalendar() {
+            calendarGrid.innerHTML = ''; // Limpa o calendário existente
+
+            // Adiciona os nomes dos dias da semana novamente
+            const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            dayNames.forEach(day => {
+                const dayNameElement = document.createElement('div');
+                dayNameElement.classList.add('font-bold', 'text-gray-500');
+                dayNameElement.textContent = day;
+                calendarGrid.appendChild(dayNameElement);
+            });
+
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth(); // 0-indexed
+
+            currentMonthDisplay.textContent = new Date(year, month).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+
+            const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 for Sunday, 1 for Monday, etc.
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Adicionar divs vazias para os dias da semana anteriores ao primeiro dia do mês
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                const emptyDiv = document.createElement('div');
+                calendarGrid.appendChild(emptyDiv);
+            }
+
+            // Adicionar os dias do mês
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('p-2', 'rounded-lg', 'calendar-day');
+                dayElement.textContent = day;
+
+                const currentDate = new Date();
+                currentDate.setHours(0, 0, 0, 0); // Zera a hora para comparação
+
+                const date = new Date(year, month, day);
+                date.setHours(0, 0, 0, 0); // Zera a hora para comparação
+
+                if (date < currentDate) {
+                    dayElement.classList.add('disabled', 'text-gray-400');
+                } else {
+                    dayElement.addEventListener('click', () => selectDate(year, month, day, dayElement));
+                    // Adiciona a classe 'selected' se for a data já selecionada
+                    const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    if (selectedDate === formattedDate) {
+                        dayElement.classList.add('selected');
+                    }
+                }
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        function selectDate(year, month, day, element) {
+            // Remove a seleção da data anterior
+            const previouslySelected = document.querySelector('.calendar-day.selected');
+            if (previouslySelected) {
+                previouslySelected.classList.remove('selected');
+            }
+
+            element.classList.add('selected');
+            selectedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            selectedTime = null; // Reseta o horário selecionado ao mudar a data
+            renderTimeSlots(); // Renderiza os horários para a nova data
+            nextStep();
+        }
+
+        prevMonthBtn.addEventListener('click', () => {
+            currentMonth.setMonth(currentMonth.getMonth() - 1);
+            renderCalendar();
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            currentMonth.setMonth(currentMonth.getMonth() + 1);
+            renderCalendar();
+        });
+
+        // Funções de Horários
+        function renderTimeSlots() {
+            timeSlotsGrid.innerHTML = '';
+            if (!selectedDate) {
+                timeSlotsGrid.innerHTML = '<p class="col-span-full text-center text-gray-600">Por favor, selecione uma data primeiro.</p>';
+                return;
+            }
+
+            const bookedTimesForSelectedDate = getBookedSlotsForDate(selectedDate);
+            const now = new Date();
+            const todayFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+            availableTimeSlots.forEach(time => {
+                const timeSlotElement = document.createElement('button');
+                timeSlotElement.classList.add('p-3', 'rounded-lg', 'shadow', 'time-slot');
+                timeSlotElement.textContent = time;
+
+                const isBooked = bookedTimesForSelectedDate.includes(time);
+                let isDisabled = false;
+
+                // Desabilitar horários passados se a data selecionada for hoje
+                if (selectedDate === todayFormatted) {
+                    const [hour, minute] = time.split(':').map(Number);
+                    const timeSlotDateTime = new Date();
+                    timeSlotDateTime.setHours(hour, minute, 0, 0);
+
+                    if (timeSlotDateTime < now) {
+                        isDisabled = true;
+                    }
+                }
+
+                if (isBooked || isDisabled) {
+                    timeSlotElement.classList.add('booked');
+                    timeSlotElement.disabled = true;
+                } else {
+                    timeSlotElement.addEventListener('click', () => selectTime(time, timeSlotElement));
+                }
+
+                if (selectedTime === time) {
+                    timeSlotElement.classList.add('selected');
+                }
+
+                timeSlotsGrid.appendChild(timeSlotElement);
+            });
+        }
+
+        // Event Listeners para seleção de serviço
+        serviceOptions.forEach(button => {
+            button.addEventListener('click', () => {
+                const previouslySelected = document.querySelector('.service-option.selected');
+                if (previouslySelected) {
+                    previouslySelected.classList.remove('bg-blue-600', 'text-white', 'selected');
+                    previouslySelected.classList.add('bg-white');
+                }
+                button.classList.remove('bg-white');
+                button.classList.add('bg-blue-600', 'text-white', 'selected');
+                selectedService = button.dataset.service;
+                // Ao selecionar o serviço, reseta a data e o horário para o passo 2
+                selectedDate = null;
+                selectedTime = null;
+                currentMonth = new Date(); // Volta para o mês atual
+                renderCalendar();
+                showStep(2);
+            });
+        });
+
+        function selectTime(time, element) {
+            // Remove a seleção do horário anterior
+            const previouslySelected = document.querySelector('.time-slot.selected');
+            if (previouslySelected) {
+                previouslySelected.classList.remove('selected');
+            }
+
+            element.classList.add('selected');
+            selectedTime = time;
+            nextStep();
+        }
+
+        // Atualizar resumo no passo 4
+        function updateSummary() {
+            summaryService.textContent = selectedService;
+            summaryDate.textContent = selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '';
+            summaryTime.textContent = selectedTime;
+        }
+
+        // Submissão do Formulário de Agendamento
+        bookingForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // Impede o envio padrão do formulário
+
+            const userName = document.getElementById('user-name').value;
+            const userEmail = document.getElementById('user-email').value;
+            const userPhone = document.getElementById('user-phone').value;
+
+            if (!selectedService || !selectedDate || !selectedTime || !userName || !userEmail) {
+                alert('Por favor, preencha todos os campos obrigatórios e selecione o serviço, data e horário.');
+                return;
+            }
+
+            const allAgendamentos = getAgendamentosFromLocalStorage();
+            const newAgendamento = {
+                id: Date.now().toString(), // ID único para o agendamento
+                service: selectedService,
+                date: selectedDate,
+                time: selectedTime,
+                name: userName,
+                email: userEmail,
+                phone: userPhone,
+                timestamp: new Date().toISOString()
+            };
+
+            allAgendamentos.push(newAgendamento);
+            saveAgendamentosToLocalStorage(allAgendamentos);
+
+            // Atualiza a tela de confirmação
+            confirmationService.textContent = selectedService;
+            confirmationDate.textContent = selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '';
+            confirmationTime.textContent = selectedTime;
+
+            showStep(5); // Vai para o passo de conclusão
+
+            // Limpa o formulário e reseta o estado para um novo agendamento
+            bookingForm.reset();
+            selectedService = null;
+            selectedDate = null;
+            selectedTime = null;
+            renderCalendar(); // Renderiza o calendário para limpar seleções antigas
+            renderAppointments(); // Atualiza a lista de agendamentos
+
+            // Rola para o topo da seção de agendamento
+            document.getElementById('booking').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        // Botão para novo agendamento no passo 5
+        newAppointmentBtn.addEventListener('click', () => {
+            resetBooking();
+        });
+
+        function resetBooking() {
+            selectedService = null;
+            selectedDate = null;
+            selectedTime = null;
+            currentMonth = new Date(); // Reseta para o mês atual
+            renderCalendar();
+            showStep(1);
+        }
+
+        // Renderiza a lista de agendamentos
+        function renderAppointments() {
+            const agendamentos = getAgendamentosFromLocalStorage();
+            agendamentos.sort((a, b) => {
+                const dateA = new Date(`${a.date}T${a.time}:00`);
+                const dateB = new Date(`${b.date}T${b.time}:00`);
+                return dateA - dateB;
+            });
+            appointmentsListDiv.innerHTML = ''; // Limpa a lista existente
+
+            if (agendamentos.length === 0) {
+                noAppointmentsMessage.classList.remove('hidden');
+            } else {
+                noAppointmentsMessage.classList.add('hidden');
+                agendamentos.forEach(agendamento => {
+                    const appointmentCard = document.createElement('div');
+                    appointmentCard.classList.add('bg-white', 'p-3', 'rounded-lg', 'shadow-md'); // Ajustado para p-3 e removidas classes flex
+
+                    const displayDate = new Date(`${agendamento.date}T00:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+                    appointmentCard.innerHTML = `
+                        <div>
+                            <p class="text-lg font-semibold text-blue-600">${agendamento.service}</p>
+                            <p class="text-gray-700">Data: ${displayDate}</p>
+                            <p class="text-gray-700">Horário: ${agendamento.time}</p>
+                            <p class="text-gray-600 text-sm">Agendado por: ${agendamento.name} (${agendamento.email})</p>
+                        </div>
+                        <button class="mt-4 md:mt-0 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded" data-id="${agendamento.id}">Cancelar</button>
+                    `;
+                    appointmentsListDiv.appendChild(appointmentCard);
+                });
+
+                // Adiciona event listeners aos botões de cancelar
+                appointmentsListDiv.querySelectorAll('button[data-id]').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const idToCancel = e.target.dataset.id;
+                        cancelAppointment(idToCancel);
+                    });
+                });
+            }
+        }
+
+        function cancelAppointment(id) {
+            // Solicita a senha
+            const password = prompt('Por favor, digite a senha para cancelar o agendamento:');
+
+            // Verifica a senha
+            if (password !== '1988') {
+                alert('Senha incorreta. O agendamento não foi cancelado.');
+                return; // Sai da função se a senha estiver incorreta
+            }
+
+            // Se a senha estiver correta, prossegue com o cancelamento
+            let agendamentos = getAgendamentosFromLocalStorage();
+            const initialLength = agendamentos.length;
+            agendamentos = agendamentos.filter(ag => ag.id !== id);
+
+            if (agendamentos.length < initialLength) {
+                saveAgendamentosToLocalStorage(agendamentos);
+                renderAppointments(); // Atualiza a lista após o cancelamento
+                renderCalendar(); // Atualiza o calendário para liberar o slot, se aplicável
+                alert('Agendamento cancelado com sucesso.');
+            } else {
+                alert('Erro ao cancelar agendamento ou agendamento não encontrado.');
+            }
+        }
+
+        // Funções para o menu mobile e overlay
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('active');
+            menuOverlay.classList.toggle('hidden'); // Alterna a visibilidade do overlay
+        }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active');
+            menuOverlay.classList.add('hidden'); // Esconde o overlay
+        }
+
+        // Event listeners para o menu mobile
+        menuToggle.addEventListener('click', toggleMobileMenu);
+        menuOverlay.addEventListener('click', closeMobileMenu); // Fecha o menu ao clicar no overlay
+
+        // NOVA FUNÇÃO PARA EXIBIR SEÇÕES DE CONTEÚDO PRINCIPAIS
+        function showContentSection(sectionId) {
+            contentSections.forEach(section => {
+                if (section.id === sectionId) {
+                    section.classList.add('active-section');
+                } else {
+                    section.classList.remove('active-section');
+                }
+            });
+        }
+
+        // Modificar os event listeners dos links de navegação para usar showContentSection
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault(); // Impede o comportamento padrão da âncora (rolagem)
+                const targetSectionId = link.dataset.sectionLink;
+                showContentSection(targetSectionId);
+                closeMobileMenu(); // Garante que o menu mobile feche ao clicar
+            });
+        });
+
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mostra a seção 'home' por padrão quando a página carrega
+            showContentSection('home');
+            renderCalendar();
+            document.getElementById('current-year-footer').textContent = new Date().getFullYear(); // Para o footer
+
+            // Modifica o link "Agendar Agora" na seção Home
+            document.querySelector('.hero-section-with-bg a[href="#booking"]').addEventListener('click', (e) => {
+                e.preventDefault(); // Impede o comportamento padrão da âncora
+                showContentSection('booking'); // Mostra diretamente a seção de agendamento
+                showStep(1); // Garante que o agendamento comece do passo 1
+            });
+
+            // Modifica o link "Ver Meus Agendamentos" no passo 5 do agendamento
+            document.querySelector('#booking-step-5 a[href="#appointments"]').addEventListener('click', (e) => {
+                e.preventDefault(); // Impede o comportamento padrão da âncora
+                showContentSection('appointments'); // Mostra diretamente a seção de agendamento
+            });
+
+            // Adiciona a atualização a cada 3 segundos para a lista de agendamentos
+            setInterval(renderAppointments, 3000);
+            renderAppointments(); // Chama uma vez ao carregar a página
+        });
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Salão de Beleza Bela Vista",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Rua das Flores, 123 - Centro",
+        "addressLocality": "São Paulo",
+        "addressRegion": "SP",
+        "postalCode": "01000-000",
+        "addressCountry": "BR"
+      },
+      "telephone": "+5511...",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Say",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "09:00",
+          "closes": "18:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Saturday",
+          "opens": "09:00",
+          "closes": "13:00"
+        }
+      ],
+      "image": "https://images.unsplash.com/photo-1599393165313-24157a3e6f9d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
+      "priceRange": "$$",
+      "url": "http://www.seusalao.com.br",
+      "hasMap": "http://maps.google.com/?q=Rua+das+Flores,+123,+São+Paulo,+SP"
+    }
+    </script>
+</body>
+</html>

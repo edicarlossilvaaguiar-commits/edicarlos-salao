@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- MELHORIA: Meta Description mais focada em vendas e benefícios -->
+    <meta name="description" content="Salão de Beleza Bela Vista em São Paulo/SP: Transforme seu visual com cortes modernos, coloração deslumbrante e tratamentos capilares luxuosos. Agende online de forma fácil e rápida. Profissionais experientes, ambiente acolhedor e resultados incríveis. Reserve seu horário hoje!">
+    <title>Salão de Beleza Bela Vista - Transforme Seu Visual, Agende Agora!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        html {
+            scroll-behavior: smooth; /* Adicionado para rolagem suave */
+        }
+        /* Mantenha todos os seus estilos aqui, incluindo os do menu mobile */
+        .calendar-day:hover:not(.disabled) {
+            background-color: #f3f4f6; /* gray-100 */
+            cursor: pointer;
+        }
+        .calendar-day.selected {
+            background-color: #2563eb; /* blue-600 */
+            color: white;
+        }
+        .time-slot:hover:not(.booked) {
+            background-color: #f3f4f6; /* gray-100 */
+            cursor: pointer;
+        }
+        .time-slot.selected {
+            background-color: #2563eb; /* blue-600 */
+            color: white;
+        }
+        .time-slot.booked {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        /* Estilos para o menu mobile */
+        @media (max-width: 768px) {
+            .mobile-menu {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                background-color: #fff;
+                position: absolute;
+                top: 64px; /* Altura da navbar */
+                left: 0;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                z-index: 1000;
+            }
+            .mobile-menu.active {
+                display: flex;
+            }
+            .mobile-menu a {
+                padding: 1rem;
+                text-align: center;
+                border-bottom: 1px solid #eee;
+            }
+        }
+
+        /* Estilos para o slideshow de fundo */
+        .hero-section-with-bg {
+            background-size: cover; /* Cobre a área inteira */
+            background-position: center; /* Centraliza a imagem */
+            background-repeat: no-repeat; /* Evita repetição */
+            position: relative; /* Para posicionar o overlay */
+            animation: slideshow 15s infinite; /* 3 imagens * 5 segundos cada = 15s */
+        }
+
+        .hero-section-with-bg::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); /* Overlay escuro para melhorar contraste do texto */
+            z-index: 1; /* Garante que o overlay esteja acima da imagem e abaixo do conteúdo */
+        }
+        .hero-section-with-bg > .container {
+            position: relative;
+            z-index: 2; /* Garante que o conteúdo esteja acima do overlay */
+        }
+
+        /* Keyframes para a animação do slideshow */
+        @keyframes slideshow {
+         0% { background-image: url('img-index-1.jpg'); } /* Primeira imagem */
+            33% { background-image: url('img-index-2.jpg'); } /* Segunda imagem */
+            100% { background-image: url('img-index-3.webp'); } /* Volta para a primeira para loop suave */
+        }
+
+        /* NOVOS ESTILOS ADICIONADOS/MODIFICADOS AQUI */
+        .content-section {
+            display: none; /* Esconde todas as seções por padrão */
+            min-height: calc(100vh - 64px); /* Ocupa 100% da altura da viewport menos a navbar */
+            padding-top: 64px; /* Adiciona padding para o conteúdo não ficar atrás da navbar fixa */
+            box-sizing: border-box; /* Garante que padding não aumente a altura total */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .content-section.active-section {
+            display: block; /* Mostra a seção ativa */
+            opacity: 1;
+        }
+
+        /* Estilos para o botão flutuante do WhatsApp */
+        .whatsapp-button {
+            position: fixed;
+            bottom: 20px; /* Distância do fundo padrão para desktop */
+            right: 20px; /* Distância da direita */
+            background-color: #25D366; /* Cor verde do WhatsApp */
+            color: white;
+            border-radius: 50%; /* Faz um círculo */
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000; /* Garante que fique acima de outros elementos */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .whatsapp-button:hover {
+            transform: scale(1.1); /* Efeito de zoom ao passar o mouse */
+        }
+
+        /* Ajuste para dispositivos móveis */
+        @media (max-width: 768px) {
+            .whatsapp-button {
+                bottom: 80px; /* Move o botão mais para cima em telas menores */
+                right: 15px; /* Pode ajustar a distância da direita também */
+                width: 55px; /* Tamanho ligeiramente menor para mobile */
+                height: 55px;
+                font-size: 28px;
+            }
+
+            /* START - New styles for smaller booking step indicators on mobile */
+            .step-indicator .w-10 { /* Targets the circular number container */
+                width: 30px; /* Smaller width */
+                height: 30px; /* Smaller height */
+                font-size: 0.875rem; /* Smaller font for the number (14px) */
+            }
+
+            .step-indicator span { /* Targets the text below the number */
+                font-size: 0.75rem; /* Smaller font for the text (12px) */
+                margin-top: 0.25rem; /* Adjust margin as needed */
+                text-align: center; /* Ensures text wraps if long */
+            }
+
+            .flex.justify-between.items-center.mb-8 { /* Targets the parent flex container of step indicators */
+                gap: 0.5rem; /* Reduce gap between indicators */
+            }
+            /* END - New styles */
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800 bg-gray-50 pt-16">
+    <nav class="bg-white shadow-md py-4 fixed top-0 w-full z-50">
+        <div class="container mx-auto flex justify-between items-center px-6">
+            <a href="#" class="text-2xl font-bold text-blue-600" data-section-link="home">Bela Vista</a>
+            <div class="hidden md:flex space-x-6">
+                <a href="#home" class="text-gray-600 hover:text-blue-600" data-section-link="home">Home</a>
+                <a href="#about" class="text-gray-600 hover:text-blue-600" data-section-link="about">Sobre</a>
+                <a href="#testimonials" class="text-gray-600 hover:text-blue-600" data-section-link="testimonials">Depoimentos</a>
+                <a href="#project" class="text-gray-600 hover:text-blue-600" data-section-link="project">Projeto</a>
+                <a href="#contact" class="text-gray-600 hover:text-blue-600" data-section-link="contact">Contato</a>
+            </div>
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-gray-600 hover:text-blue-600 focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="mobile-menu md:hidden">
+            <a href="#home" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="home">Home</a>
+            <a href="#about" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="about">Sobre</a>
+            <a href="#testimonials" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="testimonials">Depoimentos</a>
+            <a href="#project" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="project">Projeto</a>
+            <a href="#contact" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="contact">Contato</a>
+        </div>
+    </nav>
+
+    <div id="menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden"></div>
+
+    <section id="home" class="hero-section-with-bg text-white py-20 text-center content-section" data-section="home">
+        <div class="container mx-auto px-6">
+            <br><br><br><br><br>
+            <!-- MELHORIA: Título e subtítulo mais impactantes -->
+            <h1 class="text-5xl font-extrabold mb-4 animate-fadeInUp">Seu Estilo, Nossa Paixão: </h1>
+            <p class="text-xl mb-8 animate-fadeInUp delay-200">Tenha esta experiência em seu salão.</p>
+            <!-- REMOVIDO: Botão para agendamento direto da home -->
+
+            <br><br>
+            <a href="#contact" class="bg-white text-blue-600 hover:bg-blue-100 px-8 py-3 rounded-full text-lg font-semibold transition duration-300 transform hover:scale-105 animate-fadeInUp delay-400" data-section-link="contact">Entre em Contato e Saiba Mais!</a>
+        </div>
+    </section>
+
+    <section id="about" class="py-16 bg-white content-section" data-section="about">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-8">Sobre Nós: A Experiência Bela Vista</h2>
+            <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mb-8">
+               Nossa empressa está no mercado para facilitar a comunicação da sua empresa com seus clientes, de um maforma simple e eficaz, produzimos um conteúdo facíl de usar visando todo tipo de publico.
+            </p>
+            <!-- ADICIONADO: Seção "Por Que Nos Escolher" -->
+            <h3 class="text-3xl font-bold text-gray-800 mb-6">Por Que Escolher o Salão Bela Vista?</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="p-6 rounded-lg shadow-md bg-gray-50 flex flex-col items-center transform hover:scale-105 transition duration-300">
+                    <i class="fas fa-gem text-5xl text-blue-600 mb-4"></i>
+                    <h4 class="text-xl font-semibold mb-2">Profissionais Experientes</h4>
+                    <p class="text-gray-600">Nossa equipe é formada por especialistas dedicados, sempre atualizados com as últimas tendências e técnicas.</p>
+                </div>
+                <div class="p-6 rounded-lg shadow-md bg-gray-50 flex flex-col items-center transform hover:scale-105 transition duration-300">
+                    <i class="fas fa-award text-5xl text-blue-600 mb-4"></i>
+                    <h4 class="text-xl font-semibold mb-2">Produtos de Qualidade Premium</h4>
+                    <p class="text-gray-600">Procuramos está sempre melhorando todos projetos, para seu salão sair na frente..</p>
+                </div>
+                <div class="p-6 rounded-lg shadow-md bg-gray-50 flex flex-col items-center transform hover:scale-105 transition duration-300">
+                    <i class="fas fa-chair text-5xl text-blue-600 mb-4"></i>
+                    <h4 class="text-xl font-semibold mb-2">Ambiente Acolhedor e Relaxante</h4>
+                    <p class="text-gray-600">Um espaço pensado para o seu conforto e bem-estar da sua empresa e seus clientes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NOVO: Seção de Depoimentos -->
+    <section id="testimonials" class="py-16 bg-white content-section" data-section="testimonials">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-8">O Que Nossas Clientes Dizem</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-gray-50 rounded-lg shadow-md p-6">
+                    <p class="text-gray-700 italic mb-4">" Meus clientes amaram."</p>
+                    <p class="font-semibold text-blue-600">- Maria Silva</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg shadow-md p-6">
+                    <p class="text-gray-700 italic mb-4">"Tive mais controle das minha agenda"</p>
+                    <p class="font-semibold text-blue-600">- Ana Costa</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg shadow-md p-6">
+                    <p class="text-gray-700 italic mb-4">"Melhorou meus controle e melhorou para meus clientes, com isto estou lucrando mais."</p>
+                    <p class="font-semibold text-blue-600">- Juliana Mendes</p>
+                </div>
+            </div>
+            <a href="#contact" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition duration-300 mt-10 inline-block" data-section-link="contact">Fale Conosco e Saiba Mais!</a>
+        </div>
+    </section>
+
+    <!-- NOVA SEÇÃO: Projeto - Agora apenas com o botão -->
+    <section id="project" class="py-16 bg-gray-100 content-section" data-section="project">
+        <div class="container mx-auto px-6 text-center">
+            <!-- REMOVIDO: Título, parágrafo e grid de features do projeto -->
+            <h2 class="text-4xl font-bold text-gray-800 mb-8">Conheça Nossos Clientes Satisfeitos!</h2>
+            <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mb-8">
+                Clique no botão abaixo para ver o que nossos clientes têm a dizer sobre a experiência Bela Vista.
+            </p>
+            <!-- Botão para a página clientes-0.html -->
+            <a href="cliente-0.html" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition duration-300 inline-block">Ver Nossa Página de Clientes</a>
+        </div>
+    </section>
+
+    <section id="contact" class="py-16 bg-white content-section" data-section="contact">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-8">Fale Conosco: Sua Beleza ao Nosso Alcance!</h2>
+            <p class="text-lg text-gray-700 mb-4">Estamos localizados em:</p>
+            <p class="text-xl font-semibold text-blue-600 mb-6">Rua das Flores, 123 - Centro, São Paulo - SP</p>
+            <div class="map-container mb-8 rounded-lg overflow-hidden shadow-lg">
+               
+            </div>
+            <p class="text-lg text-gray-700 mb-2"><i class="fas fa-phone-alt text-blue-600 mr-2"></i>Telefone: <a href="tel:+5511987654321" class="text-blue-600 hover:underline font-bold">(31) 98941-6752</a></p>
+            <p class="text-lg text-gray-700 mb-6"><i class="fas fa-envelope text-blue-600 mr-2"></i>Email: <a href="mailto:contato@belavista.com.br" class="text-blue-600 hover:underline font-bold">Edicarlos@gmail.com</a></p>
+            <p class="text-xl font-semibold text-gray-800 mb-4">Siga-nos nas Redes Sociais:</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" target="_blank" class="text-blue-600 hover:text-blue-800 text-4xl transform hover:scale-110 transition duration-300"><i class="fab fa-instagram"></i></a>
+                <a href="#" target="_blank" class="text-blue-600 hover:text-blue-800 text-4xl transform hover:scale-110 transition duration-300"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://wa.me/5531989416752?text=Ol%C3%A1%2C%20tudo%20bem." target="_blank" class="text-blue-600 hover:text-blue-800 text-4xl transform hover:scale-110 transition duration-300"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-800 text-white py-8 text-center">
+        <div class="container mx-auto px-6">
+            <p>© <span id="current-year-footer"></span> Salão de Beleza Bela Vista. Todos os direitos reservados.</p>
+            <div class="flex justify-center space-x-4 mt-4">
+                <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/5531989416752?text=Ol%C3%A1%2C%20tudo%20bem." class="whatsapp-button" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script>
+        // Variáveis de estado do agendamento (mantidas para compatibilidade, mas não usadas diretamente)
+        let selectedService = null;
+        let selectedDate = null; // Formato YYYY-MM-DD
+        let selectedTime = null; // Formato HH:MM
+
+        // Adicionando elementos para o menu mobile e overlay
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuOverlay = document.getElementById('menu-overlay');
+
+        // NOVAS VARIÁVEIS PARA AS SEÇÕES DE CONTEÚDO
+        const contentSections = document.querySelectorAll('.content-section');
+        const navLinks = document.querySelectorAll('[data-section-link]');
+
+        // Funções de UI e Navegação
+        function showContentSection(sectionId) {
+            contentSections.forEach(section => {
+                if (section.id === sectionId) {
+                    section.classList.add('active-section');
+                } else {
+                    section.classList.remove('active-section');
+                }
+            });
+        }
+
+        // Funções para o menu mobile e overlay
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('active');
+            menuOverlay.classList.toggle('hidden'); // Alterna a visibilidade do overlay
+        }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active');
+            menuOverlay.classList.add('hidden'); // Esconde o overlay
+        }
+
+        // Event listeners para o menu mobile
+        menuToggle.addEventListener('click', toggleMobileMenu);
+        menuOverlay.addEventListener('click', closeMobileMenu); // Fecha o menu ao clicar no overlay
+
+        // Modificar os event listeners dos links de navegação para usar showContentSection
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault(); // Impede o comportamento padrão da âncora (rolagem)
+                const targetSectionId = link.dataset.sectionLink;
+                showContentSection(targetSectionId);
+                closeMobileMenu(); // Garante que o menu mobile feche ao clicar
+            });
+        });
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mostra a seção 'home' por padrão quando a página carrega
+            showContentSection('home');
+            document.getElementById('current-year-footer').textContent = new Date().getFullYear(); // Para o footer
+        });
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Salão de Beleza Bela Vista",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Rua das Flores, 123 - Centro",
+        "addressLocality": "São Paulo",
+        "addressRegion": "SP",
+        "postalCode": "01000-000",
+        "addressCountry": "BR"
+      },
+      "telephone": "+5511987654321",
+      "email": "contato@belavista.com.br",
+      "url": "http://www.seusalao.com.br",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "09:00",
+          "closes": "18:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Saturday",
+          "opens": "09:00",
+          "closes": "13:00"
+        }
+      ],
+      "image": [
+          "url('./img-index-1.jpg')",
+          "url('./img-index-2.jpg')",
+          "url('./img-index-3.webp')"
+      ],
+      "priceRange": "$$",
+      "hasMap": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.065096130541!2d-46.63419778486985!3d-23.55909898468706!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce5a210f92b3a1%3A0x6b7b7b7b7b7b7b7b!2sRua%20das%20Flores%2C%20123%20-%20Centro%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2001000-000!5e0!3m2!1spt-BR!2sbr!4v1678891234567!5m2!1spt-BR!2sbr"
+    }
+    </script>
+</body>
+</html>
