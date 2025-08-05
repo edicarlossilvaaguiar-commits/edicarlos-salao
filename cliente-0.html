@@ -89,7 +89,7 @@
             33% { background-image: url('index.avif'); } /* Segunda imagem */
             100% { background-image: url('index.avif'); } /* Volta para a primeira para loop suave */
 
-           
+
         }
 
         /* NOVOS ESTILOS ADICIONADOS/MODIFICADOS AQUI */
@@ -184,9 +184,9 @@
             <a href="#services" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="services">Serviços</a>
             <a href="#gallery" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="gallery">Galeria</a> <a href="#booking" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="booking">Agendar</a>
             <a href="#appointments" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="appointments">Agendamentos</a>
-            <a href="#contact" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="contact">Contato</a>            
+            <a href="#contact" class="text-gray-600 hover:text-blue-600" onclick="closeMobileMenu()" data-section-link="contact">Contato</a>
         </div>
-        
+
     </nav>
 
     <div id="menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden"></div>
@@ -767,8 +767,10 @@
             summaryTime.textContent = selectedTime;
         }
 
+        /* --- INÍCIO DO CÓDIGO MODIFICADO --- */
+
         // Submissão do Formulário de Agendamento
-        bookingForm.addEventListener('submit', (event) => {
+        bookingForm.addEventListener('submit', async (event) => {
             event.preventDefault(); // Impede o envio padrão do formulário
 
             const userName = document.getElementById('user-name').value;
@@ -780,9 +782,7 @@
                 return;
             }
 
-            const allAgendamentos = getAgendamentosFromLocalStorage();
             const newAgendamento = {
-                id: Date.now().toString(), // ID único para o agendamento
                 service: selectedService,
                 date: selectedDate,
                 time: selectedTime,
@@ -792,8 +792,34 @@
                 timestamp: new Date().toISOString()
             };
 
-            allAgendamentos.push(newAgendamento);
+            // Salvar no localStorage (mantido para a lista de agendamentos na página)
+            const allAgendamentos = getAgendamentosFromLocalStorage();
+            allAgendamentos.push({ ...newAgendamento, id: Date.now().toString() });
             saveAgendamentosToLocalStorage(allAgendamentos);
+
+            // Envia os dados para o Google Apps Script
+            const url = 'https://script.google.com/macros/s/AKfycbwN5zCdcnmBF9esXtfgwZx2nW5_Jykkf-qbokWCj1kGCgDY7jezO7378cGJ5Bz7WHC_kA/exec';
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necessário para evitar erros de CORS na maioria dos casos
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(newAgendamento), // Transforma o objeto em formato de formulário
+                });
+
+                // Como usamos 'no-cors', a resposta será opaca.
+                // Se a requisição for bem-sucedida (sem erros de rede), podemos prosseguir.
+                console.log('Agendamento enviado para o Google Apps Script.');
+
+            } catch (error) {
+                console.error('Erro ao enviar o agendamento:', error);
+                alert('Ocorreu um erro ao enviar o agendamento. Tente novamente.');
+                return; // Impede que o fluxo continue se houver um erro
+            }
 
             // Atualiza a tela de confirmação
             confirmationService.textContent = selectedService;
@@ -813,6 +839,7 @@
             // Rola para o topo da seção de agendamento
             document.getElementById('booking').scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
+        /* --- FIM DO CÓDIGO MODIFICADO --- */
 
         // Botão para novo agendamento no passo 5
         newAppointmentBtn.addEventListener('click', () => {
